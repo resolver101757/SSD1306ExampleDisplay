@@ -14,13 +14,13 @@
 #include <Arduino.h>
 
 // Pin that communicated with the DHT11
-#define DHT22_PIN 2
+#define DHT22_PIN 35 // GPIO 18 = GPIO 18
 
 // Width of our display - used as the maximum stack value
 #define MAXSTACK 128
 
 // I2C address for the screen. Update this for your screen.
-#define SCREENADR 0x3C
+#define SCREENADR 0x78
 
 class Stack
 {
@@ -75,7 +75,7 @@ void displayChart() {
 }
 
 void loop() {
-  int chk = ourDHT.read11(DHT11_PIN);
+  int  chk = ourDHT.read22(DHT22_PIN);
   temperature_stack.push(ourDHT.temperature);
   displayChart();
   displayNum();
