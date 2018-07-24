@@ -3,18 +3,17 @@
 // Displays temperature and humidity values on a I2C OLED Display 128X64 0.96"
 // Also shows a scrolling realtime temperature graph
 // REQUIRES a DHT11 sensor and a SSD1306  display plus the following libraries:
-// https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib
+// Changed DHT library to https://github.com/beegee-tokyo/DHTesp/blob/master//DHT_ESP32/DHT_ESP32.ino
 // https://github.com/adafruit/Adafruit_SSD1306
 // https://github.com/adafruit/Adafruit-GFX-Library
 
 
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
-#include <dht.h>
 #include <Arduino.h>
+#include "DHTesp.h"
+#include "Ticker.h"
 
-// Pin that communicated with the DHT11
-#define DHT22_PIN 35 // GPIO 18 = GPIO 18
 
 // Width of our display - used as the maximum stack value
 #define MAXSTACK 128
@@ -49,13 +48,17 @@ class Stack
     }
 };
 
-dht ourDHT;
 Stack temperature_stack;
 Adafruit_SSD1306 display(4);
+DHTesp dht;
+
+int dhtPin = 18;
 
 void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, SCREENADR);
   display.clearDisplay();
+  dht.setup(dhtPin, DHTesp::DHT22);
+  Serial.begin(115200);
 }
 
 // Function to display a character
@@ -63,7 +66,7 @@ void displayNum() {
   display.setTextSize(1);
   display.setTextColor(WHITE, BLACK);
   display.setCursor(0, 0);
-  display.println("Temp:" + String(ourDHT.temperature) + " Hum:" + String(ourDHT.humidity));
+  display.println("Temp:" + String(dht.getTemperature())); //+ " Hum:" + String(dht.getTempAndHumidity);
 }
 
 // Function to display the chart
@@ -75,11 +78,12 @@ void displayChart() {
 }
 
 void loop() {
-  int  chk = ourDHT.read22(DHT22_PIN);
-  temperature_stack.push(ourDHT.temperature);
+  float temperature = dht.getTemperature();
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
+  temperature_stack.push(int(dht.getTemperature()));
   displayChart();
   displayNum();
   display.display();
   delay(100);
-
 }
